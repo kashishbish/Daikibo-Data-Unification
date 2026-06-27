@@ -1,0 +1,217 @@
+# Daikibo Data Unification
+
+## Project Overview
+
+This project solves a real-world data integration problem for Daikibo Industrials, a global leader in manufacturing heavy machinery. The company needed to unify telemetry data from Industrial IoT (IIoT) devices that were streaming data in two different formats.
+
+## Problem Statement
+
+Daikibo Industrials has deployed IIoT devices across their manufacturing facilities to monitor, measure, and analyze production processes. However, their infrastructure uses two different telemetry data formats:
+
+- Half of the devices send data in Format 1 (flat structure with "/" separated location strings)
+- The other half send data in Format 2 (nested structure with ISO 8601 timestamps)
+
+This inconsistency made it impossible to analyze data across the entire factory in a unified manner.
+
+## Solution
+
+This Python project implements conversion functions that transform both telemetry formats into a single, standardized unified format. This allows Daikibo to:
+
+- Monitor all devices in real-time using a consistent data structure
+- Run unified analytics across the entire factory
+- Create comprehensive dashboards without format-specific logic
+- Make data-driven decisions based on complete operational data
+
+## Technical Details
+
+### Input Format 1
+
+Flat structure with "/" separated location string and abbreviated field names:
+
+```json
+{
+    "deviceID": "dh28dslkja",
+    "deviceType": "LaserCutter",
+    "timestamp": 1624445837783,
+    "location": "japan/tokyo/keiyō-industrial-zone/daikibo-factory-meiyo/section-1",
+    "operationStatus": "healthy",
+    "temp": 22
+}
+```
+
+### Input Format 2
+
+Nested structure with ISO 8601 timestamp string:
+
+```json
+{
+    "device": {
+        "id": "dh28dslkja",
+        "type": "LaserCutter"
+    },
+    "timestamp": "2021-06-23T10:57:17.783Z",
+    "country": "japan",
+    "city": "tokyo",
+    "area": "keiyō-industrial-zone",
+    "factory": "daikibo-factory-meiyo",
+    "section": "section-1",
+    "data": {
+        "status": "healthy",
+        "temperature": 22
+    }
+}
+```
+
+### Unified Output Format
+
+Normalized structure with nested objects and milliseconds timestamp:
+
+```json
+{
+    "deviceID": "dh28dslkja",
+    "deviceType": "LaserCutter",
+    "timestamp": 1624445837783,
+    "location": {
+        "country": "japan",
+        "city": "tokyo",
+        "area": "keiyō-industrial-zone",
+        "factory": "daikibo-factory-meiyo",
+        "section": "section-1"
+    },
+    "data": {
+        "status": "healthy",
+        "temperature": 22
+    }
+}
+```
+
+## Key Features
+
+1. Format 1 Conversion (convertFromFormat1)
+   - Splits "/" separated location string into structured object
+   - Renames abbreviated field names to standardized names
+   - Preserves timestamp (already in milliseconds)
+
+2. Format 2 Conversion (convertFromFormat2)
+   - Extracts nested device information
+   - Converts ISO 8601 timestamp to milliseconds since epoch
+   - Groups flat location fields into nested object
+   - Preserves properly formatted data object
+
+3. Automatic Format Detection (main)
+   - Detects which format input data is in
+   - Routes to appropriate conversion function
+   - Returns unified format output
+
+4. Comprehensive Testing (unittest)
+   - Sanity check for expected output format
+   - Validation of Format 1 conversion
+   - Validation of Format 2 conversion
+   - All tests must pass for production deployment
+
+## Files
+
+- main.py: Main Python script with conversion functions and unit tests
+- data-1.json: Sample telemetry data in Format 1
+- data-2.json: Sample telemetry data in Format 2
+- data-result.json: Expected unified format output
+- README.md: This file
+
+## Requirements
+
+- Python 3.x
+- Standard library modules: json, datetime, unittest
+
+## Running the Project
+
+Execute the following command to run all tests:
+
+```bash
+python main.py
+```
+
+Expected output on success:
+
+```
+Ran 3 tests in 0.005s
+
+OK
+```
+
+If all tests pass, the conversion functions are working correctly.
+
+## Technical Implementation
+
+### Timestamp Conversion
+
+Format 2 uses ISO 8601 timestamp strings (e.g., "2021-06-23T10:57:17.783Z") while the unified format requires milliseconds since epoch (e.g., 1624445837783).
+
+The conversion process:
+1. Parse ISO 8601 string using datetime.strptime()
+2. Calculate seconds elapsed since January 1, 1970 (epoch)
+3. Multiply by 1000 to convert to milliseconds
+4. Round to nearest integer
+
+### Location String Parsing
+
+Format 1 encodes location information as a "/" delimited string. The conversion splits this string and maps each segment to the appropriate location field:
+
+- Index 0: country
+- Index 1: city
+- Index 2: area
+- Index 3: factory
+- Index 4: section
+
+### Format Detection
+
+The main() function determines which format the input is in by checking for the presence of a "device" key:
+
+- If "device" key is absent: Format 1
+- If "device" key is present: Format 2
+
+## Test Results
+
+Three unit tests validate the solution:
+
+1. test_sanity: Verifies the expected result file is valid JSON
+2. test_dataType1: Validates Format 1 conversion produces correct unified output
+3. test_dataType2: Validates Format 2 conversion produces correct unified output
+
+All three tests must pass before the solution is considered complete.
+
+## Use Cases
+
+This solution enables Daikibo Industrials to:
+
+- Aggregate real-time sensor data from all manufacturing facilities
+- Detect equipment failures across device types
+- Optimize production efficiency based on unified metrics
+- Track temperature, status, and location uniformly
+- Generate comprehensive operational reports
+- Train machine learning models on consistent data format
+
+## Future Enhancements
+
+Potential improvements for future iterations:
+
+- Add support for additional telemetry formats as needed
+- Implement error handling for malformed data
+- Add data validation and sanitization
+- Create batch processing for high-volume conversions
+- Implement logging for debugging and auditing
+- Add performance optimizations for large datasets
+
+## Author
+
+Developed as part of the Deloitte Internship Program
+
+## Deloitte Task Completion
+
+This project successfully completes the Deloitte internship task:
+
+- Opens starter project files
+- Reviews two different input formats
+- Reviews target unified format
+- Implements conversion functions for both formats
+- Runs automated unit tests
+- All tests pass without failures
