@@ -1,6 +1,6 @@
 # Daikibo Data Unification
 
-## Project Overview
+##Project Overview
 
 This project solves a real-world data integration problem for Daikibo Industrials, a global leader in manufacturing heavy machinery. The company needed to unify telemetry data from Industrial IoT (IIoT) devices that were streaming data in two different formats.
 
